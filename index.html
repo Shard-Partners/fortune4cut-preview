@@ -85,6 +85,9 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.022em;margin:0;line-height:1.
 .ncontent{transform-box:fill-box;transform-origin:center}
 .born .ncontent{animation:born .9s cubic-bezier(.2,1.3,.3,1) both}
 @keyframes born{0%{transform:scale(0);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
+@keyframes starIn{from{opacity:0}to{opacity:1}}
+.trailA,.trailB{fill:none;stroke-linecap:round}
+.map-dim .trailA,.map-dim .trailB{opacity:.25}
 .mehalo{animation:mebreathe 5.5s ease-in-out infinite}
 @keyframes mebreathe{0%,100%{opacity:.28}50%{opacity:.5}}
 .shoot{animation:shoot 11s ease-in 3s infinite}
@@ -234,7 +237,7 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.022em;margin:0;line-height:1.
 .faceview::-webkit-scrollbar{display:none}
 .app.facemode .faceview{display:block}
 .app.facemode header,.app.facemode .hint,.app.facemode .chips,.app.facemode .dock{display:none}
-.app.facemode #map .node,.app.facemode #map #meNode,.app.facemode #map .ring,.app.facemode #map .selline,.app.facemode #map .shoot{display:none}
+.app.facemode #map .node,.app.facemode #map #meNode,.app.facemode #map .ring,.app.facemode #map .selline,.app.facemode #map .shoot,.app.facemode #map #trails,.app.facemode #map .tick{display:none}
 .f-eyebrow{font-size:11px;font-weight:600;letter-spacing:.18em;color:var(--ter);text-transform:uppercase;margin:0 0 8px}
 .f-h1{font-size:32px;font-weight:700;letter-spacing:-.022em;margin:0;line-height:1.15}
 .f-sub{font-size:14px;color:var(--sec);margin:10px 0 0;line-height:1.6}
@@ -398,7 +401,7 @@ const POOL=[
  {name:'Chloe',rel:'Mentor',     chem:71, elem:'Winter Water', mech:'Water tempers fire', quip:'Remembers everything you said in passing'},
  {name:'Theo', rel:'Rival',      chem:58, elem:'Summer Fire',  mech:'Fire meets fire',    quip:'Keeps score and keeps it interesting'}
 ];
-let friends=[]; let bornName=null; let selName=null; let filter='All';
+let friends=[]; let bornName=null; let selName=null; let filter='All'; let NODEMAP={}; let firstRender=true;
 function save(){try{localStorage.setItem(LS,JSON.stringify(friends.map(f=>f.name)))}catch(e){}}
 function load(){
   let names=null;
@@ -427,70 +430,127 @@ function assignAngles(){
   by.forEach((arr,ri)=>arr.forEach((f,k)=>{baseAngle[f.name]=(starts[ri]+k*(360/arr.length))*Math.PI/180}));
 }
 function staticSky(){
-  let s='<defs>'
+  let sky='<defs>'
    +'<filter id="b1" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>'
    +'<filter id="b2" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="12"/></filter>'
-   +'<radialGradient id="neb1"><stop offset="0%" stop-color="rgba(242,206,139,.06)"/><stop offset="100%" stop-color="rgba(242,206,139,0)"/></radialGradient>'
-   +'<radialGradient id="neb2"><stop offset="0%" stop-color="rgba(120,150,255,.05)"/><stop offset="100%" stop-color="rgba(120,150,255,0)"/></radialGradient>'
+   +'<filter id="b3" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="1.1"/></filter>'
+   +'<radialGradient id="neb1"><stop offset="0%" stop-color="rgba(242,206,139,.075)"/><stop offset="100%" stop-color="rgba(242,206,139,0)"/></radialGradient>'
+   +'<radialGradient id="neb2"><stop offset="0%" stop-color="rgba(112,146,255,.06)"/><stop offset="100%" stop-color="rgba(112,146,255,0)"/></radialGradient>'
+   +'<radialGradient id="neb3"><stop offset="0%" stop-color="rgba(196,152,255,.045)"/><stop offset="100%" stop-color="rgba(196,152,255,0)"/></radialGradient>'
+   +'<linearGradient id="flareG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,244,220,0)"/><stop offset=".5" stop-color="rgba(255,244,220,.85)"/><stop offset="1" stop-color="rgba(255,244,220,0)"/></linearGradient>'
    +'</defs>';
-  s+=`<circle cx="${CX}" cy="${CY}" r="190" fill="url(#neb1)"/>`;
-  s+=`<circle cx="120" cy="170" r="150" fill="url(#neb2)"/>`;
-  for(let i=0;i<64;i++){
+  sky+='<g id="lyNeb">'
+    +`<circle cx="${CX}" cy="${CY}" r="212" fill="url(#neb1)"/>`
+    +`<circle cx="112" cy="152" r="172" fill="url(#neb2)"/>`
+    +`<circle cx="330" cy="640" r="190" fill="url(#neb3)"/>`
+    +'</g>';
+  sky+='<g id="lyBack">';
+  for(let i=0;i<86;i++){
     const x=((i*173+41)%(W-16))+8, y=((i*257+87)%(H-40))+20;
-    const r=i%7===0?1.1:.6, o=(.10+((i*31)%14)*.02).toFixed(2);
-    s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(245,245,247,${o})" class="tw${i%3+1}"/>`;
+    const big=i%9===0;
+    const r=big?1.15:(i%3===0?.75:.5);
+    const o=(big?.34:(.10+((i*31)%12)*.018)).toFixed(2);
+    sky+=`<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(245,245,247,${o})" class="tw${i%3+1}"/>`;
   }
-  RINGS.forEach(r=>{s+=`<circle class="ring" cx="${CX}" cy="${CY}" r="${r}"/>`});
-  s+=`<g class="shoot"><line x1="52" y1="120" x2="86" y2="133" stroke="rgba(245,245,247,.7)" stroke-width="1.1" stroke-linecap="round"/></g>`;
-  /* me */
-  s+=`<g id="meNode" style="cursor:pointer" onclick="openMe()">
-    <circle class="mehalo" cx="${CX}" cy="${CY}" r="26" fill="#F2CE8B" opacity=".28" filter="url(#b2)"/>
-    <circle cx="${CX}" cy="${CY}" r="11" fill="#FFF3DC" filter="url(#b1)" opacity=".9"/>
-    <circle cx="${CX}" cy="${CY}" r="7" fill="#FFF9EE"/>
-    <circle cx="${CX}" cy="${CY}" r="15" fill="none" stroke="rgba(245,245,247,.22)" stroke-width="1"/>
-    <text class="me-label" x="${CX}" y="${CY+34}">You</text>
+  sky+='</g>';
+  RINGS.forEach(r=>{sky+=`<circle class="ring" cx="${CX}" cy="${CY}" r="${r}"/>`});
+  for(let i=0;i<24;i++){
+    const a=i*(Math.PI/12), r0=RINGS[2]-2.5, r1=RINGS[2]+2.5;
+    sky+=`<line class="tick" x1="${(CX+Math.cos(a)*r0).toFixed(1)}" y1="${(CY+Math.sin(a)*r0).toFixed(1)}" x2="${(CX+Math.cos(a)*r1).toFixed(1)}" y2="${(CY+Math.sin(a)*r1).toFixed(1)}" stroke="rgba(245,245,247,.10)" stroke-width="1"/>`;
+  }
+  sky+=`<g class="shoot"><line x1="52" y1="120" x2="86" y2="133" stroke="rgba(245,245,247,.7)" stroke-width="1.1" stroke-linecap="round"/></g>`;
+  sky+='<g id="trails"></g>';
+  sky+=`<g id="meNode" style="cursor:pointer" onclick="openMe()">
+    <circle class="mehalo" cx="${CX}" cy="${CY}" r="34" fill="#F2CE8B" opacity=".30" filter="url(#b2)"/>
+    <circle cx="${CX}" cy="${CY}" r="13" fill="#FFE9BE" filter="url(#b1)" opacity=".85"/>
+    <rect x="${CX-32}" y="${CY-0.45}" width="64" height="0.9" fill="url(#flareG)" opacity=".5"/>
+    <rect x="${CX-32}" y="${CY-0.45}" width="64" height="0.9" fill="url(#flareG)" opacity=".5" transform="rotate(90 ${CX} ${CY})"/>
+    <circle cx="${CX}" cy="${CY}" r="7.5" fill="#FFFBF0"/>
+    <circle cx="${CX}" cy="${CY}" r="16" fill="none" stroke="rgba(245,245,247,.18)" stroke-width="1"/>
+    <text class="me-label" x="${CX}" y="${CY+36}">You</text>
   </g>`;
-  s+=`<line id="selLine" class="selline" x1="${CX}" y1="${CY}" x2="${CX}" y2="${CY}"/>`;
-  s+='<g id="orbits"></g>';
+  sky+=`<line id="selLine" class="selline" x1="${CX}" y1="${CY}" x2="${CX}" y2="${CY}"/>`;
+  sky+='<g id="orbits"></g>';
   $('#map').setAttribute('viewBox',`0 0 ${W} ${H}`);
-  $('#map').innerHTML=s;
+  $('#map').innerHTML=sky;
 }
-function nodeSvg(f){
+function nodeSvg(f,i){
   const hi=f.rel==='Lucky Star';
   const col=hi?'#F2CE8B':'#E8ECF4';
-  const hot=hi?'#FFE9BE':'#FFFFFF';
-  const sz=(4.6+(f.chem/100)*2.4).toFixed(1);
-  return `<g class="node ${f.name===selName?'sel':''} ${f.name===bornName?'born':''}" data-n="${f.name}" onclick="openPerson('${f.name}')">
-    <g class="ncontent">
-      <circle class="halo" r="${sz*2.6}" fill="${col}" opacity=".22" filter="url(#b1)"/>
-      <circle class="core" r="${sz}" fill="${col}"/>
-      <circle class="hot" r="${(sz*.42).toFixed(1)}" fill="${hot}"/>
-      <circle class="selring" r="${sz*2.1}"/>
+  const hot=hi?'#FFF3D8':'#FFFFFF';
+  const sz=4.4+(f.chem/100)*2.6;
+  const flare=hi?`<rect x="${(-sz*3.3).toFixed(1)}" y="-0.4" width="${(sz*6.6).toFixed(1)}" height="0.8" fill="url(#flareG)" opacity=".38"/><rect x="${(-sz*3.3).toFixed(1)}" y="-0.4" width="${(sz*6.6).toFixed(1)}" height="0.8" fill="url(#flareG)" opacity=".38" transform="rotate(90)"/>`:'';
+  const enter=(firstRender&&f.name!==bornName)?`style="animation:starIn .7s ${(0.2+i*0.09).toFixed(2)}s both"`:'';
+  return `<g class="node ${f.name===selName?'sel':''} ${f.name===bornName?'born':''}" data-n="${f.name}" onclick="openPerson('${f.name}')" style="cursor:pointer">
+    <g class="ncontent" ${enter}>
+      <circle class="halo" r="${(sz*3.1).toFixed(1)}" fill="${col}" opacity="${hi?'.20':'.15'}" filter="url(#b2)"/>
+      <circle r="${(sz*1.5).toFixed(1)}" fill="${col}" opacity=".5" filter="url(#b3)"/>
+      ${flare}
+      <circle class="core" r="${sz.toFixed(1)}" fill="${col}"/>
+      <circle class="hot" r="${(sz*.4).toFixed(1)}" fill="${hot}"/>
+      <circle class="selring" r="${(sz*2.2).toFixed(1)}"/>
       <circle r="20" fill="transparent"/>
-      <text y="${Number(sz)+17}">${f.name}</text>
+      <text y="${(sz+18).toFixed(0)}">${f.name}</text>
     </g>
   </g>`;
 }
 function renderOrbits(){
-  $('#orbits').innerHTML=friends.map(nodeSvg).join('');
+  $('#orbits').innerHTML=friends.map((f,i)=>nodeSvg(f,i)).join('');
+  $('#trails').innerHTML=friends.map(f=>{
+    const col=f.rel==='Lucky Star'?'#F2CE8B':'#E8ECF4';
+    return `<path class="trailA" data-ta="${f.name}" stroke="${col}" stroke-opacity=".13" stroke-width="2"/>`
+         + `<path class="trailB" data-tb="${f.name}" stroke="${col}" stroke-opacity=".38" stroke-width="1.1"/>`;
+  }).join('');
+  NODEMAP={};
+  friends.forEach(f=>{
+    NODEMAP[f.name]={
+      g:document.querySelector(`#orbits .node[data-n="${f.name}"]`),
+      ta:document.querySelector(`#trails [data-ta="${f.name}"]`),
+      tb:document.querySelector(`#trails [data-tb="${f.name}"]`)
+    };
+  });
   applyFilter(false);
-  bornName=null;
+  bornName=null; firstRender=false;
 }
 function posOf(f,now){
   const ri=ringOf(f);
   const a=baseAngle[f.name]+SPEED[ri]*((now-t0)/1000);
   return {x:CX+Math.cos(a)*RINGS[ri], y:CY+Math.sin(a)*RINGS[ri]};
 }
+function arcPath(r,a0,a1){
+  const x0=CX+Math.cos(a0)*r, y0=CY+Math.sin(a0)*r;
+  const x1=CX+Math.cos(a1)*r, y1=CY+Math.sin(a1)*r;
+  return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+}
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const par={x:0,y:0,tx:0,ty:0};
 function tick(now){
   const line=$('#selLine');
-  document.querySelectorAll('#orbits .node').forEach(g=>{
-    const f=friends.find(x=>x.name===g.dataset.n); if(!f)return;
-    const p=posOf(f,now);
-    g.setAttribute('transform',`translate(${p.x.toFixed(2)},${p.y.toFixed(2)})`);
-    if(f.name===selName){line.setAttribute('x2',p.x);line.setAttribute('y2',p.y)}
+  friends.forEach(f=>{
+    const nm=NODEMAP[f.name]; if(!nm||!nm.g) return;
+    const ri=ringOf(f);
+    const a=baseAngle[f.name]+(RM?0:SPEED[ri]*((now-t0)/1000));
+    const r=RINGS[ri];
+    const x=CX+Math.cos(a)*r, y=CY+Math.sin(a)*r;
+    nm.g.setAttribute('transform',`translate(${x.toFixed(2)},${y.toFixed(2)})`);
+    if(nm.ta) nm.ta.setAttribute('d',arcPath(r,a-0.5,a-0.07));
+    if(nm.tb) nm.tb.setAttribute('d',arcPath(r,a-0.17,a-0.025));
+    if(f.name===selName){line.setAttribute('x2',x);line.setAttribute('y2',y)}
   });
+  if(!RM){
+    par.x+=(par.tx-par.x)*.045; par.y+=(par.ty-par.y)*.045;
+    const lb=document.getElementById('lyBack'), ln=document.getElementById('lyNeb');
+    if(lb) lb.setAttribute('transform',`translate(${(-par.x*5).toFixed(1)},${(-par.y*4).toFixed(1)})`);
+    if(ln) ln.setAttribute('transform',`translate(${(-par.x*9).toFixed(1)},${(-par.y*7).toFixed(1)})`);
+  }
   requestAnimationFrame(tick);
 }
+document.getElementById('app').addEventListener('pointermove',e=>{
+  const r=document.getElementById('app').getBoundingClientRect();
+  par.tx=((e.clientX-r.left)/r.width-.5)*2;
+  par.ty=((e.clientY-r.top)/r.height-.5)*2;
+});
+document.getElementById('app').addEventListener('pointerleave',()=>{par.tx=0;par.ty=0});
 
 /* ================= chips / filter ================= */
 function typeCounts(){
