@@ -209,6 +209,56 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.022em;margin:0;line-height:1.
 .sh-link .u{font-size:14px;color:var(--sec)}
 .sh-link .c{font-size:14px;font-weight:600;color:var(--label)}
 
+/* ===== daily alignment ===== */
+.daily{
+  margin-top:16px;pointer-events:auto;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  background:rgba(24,25,30,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(245,245,247,.09);border-radius:16px;padding:12px 15px;
+  transition:transform .15s;
+}
+.daily:active{transform:scale(.98)}
+.daily .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none;box-shadow:0 0 10px rgba(242,206,139,.8)}
+.daily .tx{flex:1;font-size:12.5px;color:var(--sec);line-height:1.5}
+.daily .tx b{color:var(--label);font-weight:600}
+.daily .go{flex:none;font-size:12.5px;font-weight:600;color:var(--gold)}
+
+/* ===== match flow ===== */
+.mload{padding:34px 0 30px;text-align:center}
+.mload .orbs{display:flex;justify-content:center;align-items:center;height:56px}
+.mload .orbs i{width:26px;height:26px;border-radius:50%;flex:none}
+.mload .orbs i.a{background:#FFE9BE;box-shadow:0 0 24px rgba(242,206,139,.7);animation:drifta 1.5s ease-in-out infinite alternate}
+.mload .orbs i.b{animation:driftb 1.5s ease-in-out infinite alternate}
+@keyframes drifta{from{transform:translateX(-16px)}to{transform:translateX(-3px)}}
+@keyframes driftb{from{transform:translateX(16px)}to{transform:translateX(3px)}}
+.mload .cap{font-size:13.5px;color:var(--sec);margin-top:20px}
+.m-head{text-align:center;padding-top:6px}
+.m-orbs{display:flex;justify-content:center;align-items:center;height:52px}
+.m-orbs i{width:30px;height:30px;border-radius:50%;flex:none}
+.m-orbs i.a{background:#FFE9BE;box-shadow:0 0 22px rgba(242,206,139,.65);transform:translateX(5px);z-index:2}
+.m-orbs i.b{transform:translateX(-5px)}
+.m-pair{font-size:14px;font-weight:600;color:var(--sec);margin:12px 0 0}
+.m-score{font-size:64px;font-weight:700;letter-spacing:-.04em;color:var(--gold);line-height:1.05;margin-top:10px;font-variant-numeric:tabular-nums}
+.m-cap{font-size:10px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--ter);margin-top:8px}
+.m-rows{margin-top:26px;border-top:1px solid rgba(245,245,247,.10)}
+.m-row{padding:15px 2px;border-bottom:1px solid rgba(245,245,247,.10);opacity:0;transform:translateY(8px);animation:frow .5s cubic-bezier(.3,.8,.3,1) both}
+.m-row b{display:block;font-size:13.5px;font-weight:700;margin-bottom:5px}
+.m-row p{margin:0;font-size:13.5px;color:var(--sec);line-height:1.6}
+
+/* ===== face freemium ===== */
+.f-row.lock .v{filter:blur(5px);user-select:none;transition:filter .6s}
+.f-row.lock .k{opacity:.55}
+.f-locknote{font-size:12.5px;color:var(--ter);text-align:center;margin-top:16px}
+.f-unlock{margin-top:18px}
+.f-boost{
+  margin-top:26px;background:rgba(242,206,139,.09);border:1px solid rgba(242,206,139,.20);
+  border-radius:18px;padding:18px 20px;display:none;
+  opacity:0;transform:translateY(10px);
+}
+.f-boost.on{display:block;animation:frow .55s .5s cubic-bezier(.3,.8,.3,1) both}
+.f-boost .bl{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0}
+.f-boost p{font-size:14px;line-height:1.65;color:var(--label);margin:9px 0 0}
+
 /* ===== toast ===== */
 .toast{
   position:absolute;top:74px;left:50%;transform:translate(-50%,-12px);z-index:90;
@@ -300,6 +350,11 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.022em;margin:0;line-height:1.
     <p class="eyebrow">Fate Map</p>
     <h1>Your sky</h1>
     <p class="subline" id="subline">6 friends in orbit · 3 lucky stars</p>
+    <div class="daily" onclick="openPerson('Maya')">
+      <span class="dot"></span>
+      <span class="tx"><b>Today&rsquo;s alignment.</b> Maya&rsquo;s orbit crosses yours. A good day to reach out first.</span>
+      <span class="go">Open</span>
+    </div>
   </header>
 
   <p class="hint">Closer to you means stronger chemistry. Tap anyone.</p>
@@ -354,8 +409,14 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.022em;margin:0;line-height:1.
         <p class="tag">Soft on the surface, steady underneath.<br>People trust you before you say a word.</p>
       </div>
       <div class="f-rows" id="fRows"></div>
-      <div class="f-note"><b>Charm point.</b> That small mark near your chin is a classic sign of a face people remember.</div>
-      <div class="f-cta"><button class="btng" onclick="openShare('face')">Share your reading</button></div>
+      <p class="f-locknote" id="fLocknote">The first two are free. Four more are waiting.</p>
+      <div class="f-unlock" id="fUnlockBtn"><button class="btnw" onclick="unlockFace(this)">Unlock full reading &middot; $0.99</button></div>
+      <div class="f-note" id="fNote" style="display:none"><b>Charm point.</b> That small mark near your chin is a classic sign of a face people remember.</div>
+      <div class="f-boost" id="fBoost">
+        <p class="bl">This week&rsquo;s boost</p>
+        <p>Wear something gold on Thursday. Say yes to the plan you almost skipped.</p>
+      </div>
+      <div class="f-cta" id="fCta" style="display:none"><button class="btng" onclick="openShare('face')">Share your reading</button></div>
     </div>
   </div>
 
@@ -622,7 +683,7 @@ function openPerson(n){
       <p class="rm">${f.mech}</p>
     </div>
     <div class="upsell">
-      <button class="btng" onclick="toast('Full readings live in the app. This is just your sky.')">See your full match with ${f.name} · $0.99</button>
+      <button class="btng" onclick="openMatch('${f.name}')">${MATCHES.has(f.name)?'See your match again':'See your full match with '+f.name+' \u00B7 $0.99'}</button>
       <p class="priv">Only you can see it. ${f.name} will never know you peeked.</p>
     </div>
   `);
@@ -647,11 +708,18 @@ function openMe(){
     </div>
   `);
 }
-function openShare(ctx){
-  ctx = ctx==='face' ? 'face' : 'sky';
+function openShare(ctx,mName,mScore){
+  ctx = (ctx==='face'||ctx==='match') ? ctx : 'sky';
   selName=null;applyFilter();
-  explain(ctx==='face'?'faceShare':'share');
-  const card = ctx==='face'
+  explain(ctx==='face'?'faceShare':(ctx==='match'?'match':'share'));
+  const card = ctx==='match'
+    ? `<div class="sharecard">
+        <p class="sc-tag">Match</p>
+        <p class="sc-big">Jordan &times; ${mName}</p>
+        <p class="sc-sub">${mScore} &middot; written in both charts</p>
+        <div class="sc-foot"><span>Fortune4Cut</span><span>fate4cut.app</span></div>
+      </div>`
+    : ctx==='face'
     ? `<div class="sharecard">
         <p class="sc-tag">Face Reading</p>
         <p class="sc-big">Deer Face</p>
@@ -666,10 +734,12 @@ function openShare(ctx){
         <div class="sc-foot"><span>Fortune4Cut</span><span>fate4cut.app/jordan</span></div>
       </div>`;
   openSheetHtml(`
-    <p class="sh-title">${ctx==='face'?'Share your reading':'Share your sky'}</p>
+    <p class="sh-title">${ctx==='face'?'Share your reading':(ctx==='match'?'Share this match':'Share your sky')}</p>
     <p class="sh-sub">${ctx==='face'
       ?'Your face type goes out as a card. Your photo stays on your phone.'
-      :'Your sky goes out as a card with your invite link inside. Anyone who taps it can join your orbit.'}</p>
+      :(ctx==='match'
+        ?'The score goes out as a card. The full reading stays between you two.'
+        :'Your sky goes out as a card with your invite link inside. Anyone who taps it can join your orbit.')}</p>
     ${card}
     <div class="sh-rows">
       <button class="sh-row" onclick="shareDone('${ctx}','Threads')">Threads <span>Post card</span></button>
@@ -706,8 +776,10 @@ const EXP={
  filter:{tag:'FILTER',t:'타입별로 골라보기',b:'칩 누르면 그 타입 친구들만 밝게 남아요.<br><br>귀인이 몇 명인지, 라이벌이 누군지 한눈에 보고 싶을 때 쓰면 돼요. All 누르면 다시 다 보이고요.'},
  faceIdle:{tag:'FACE READING',t:'두 번째 기능은 관상이에요',b:'위에 토글로 귀인지도랑 관상 왔다 갔다 할 수 있어요.<br><br>사진 올리면 분석 시작되는데, 프로토타입이라 실제 업로드 대신 샘플 사진 하나로 흐름만 보여드리는 거예요.'},
  faceScan:{tag:'ANALYZING',t:'지금 얼굴 읽는 중이에요',b:'금색 빛이 얼굴 위를 훑고 지나가면서 눈, 코, 입 자리마다 점이 하나씩 찍혀요. 점들끼리 이어지는 것도 보이고요.<br><br>밑에 진행 바 문구도 단계마다 바뀌는데, 몇 초 안 되는 이 시간이 은근 기대하게 만들어요.'},
+ match:{tag:'MATCH',t:'궁합까지 풀어봤어요',b:'결제 누르면 두 사람 차트를 같이 읽는 로딩이 잠깐 돌고, 합산 점수랑 연애, 케미, 부딪히는 지점까지 나와요.<br><br>돈 내고 보는 화면이라 제일 공들였어요. 결과는 카드로 공유할 수도 있고요.'},
+ faceFull:{tag:'UNLOCKED',t:'풀이 전체가 열렸어요',b:'잠겨 있던 네 줄이 하나씩 선명해지면서 풀이가 다 보여요.<br><br>맨 밑에는 이번 주 개운법까지 챙겨줘요. 금색 뭐라도 하나 걸치라고 하네요.'},
  faceShare:{tag:'SHARE',t:'관상 결과도 카드로',b:'제 얼굴형이랑 한 줄 요약이 카드로 만들어져서 나가요.<br><br>사진 원본은 안 나가고 폰 안에만 있다는 것도 같이 알려줘요.'},
- faceResult:{tag:'RESULT',t:'관상 결과 나왔어요',b:'얼굴형부터 딱 뜨고, 이마부터 턱선까지 하나씩 순서대로 풀이가 떠요.<br><br>턱 옆에 있는 점까지 짚어주니까 진짜 제 얼굴 보고 말해주는 느낌이 들어요.'}
+ faceResult:{tag:'RESULT',t:'관상 결과 나왔어요',b:'얼굴형이 먼저 딱 뜨고, 부위별 풀이가 순서대로 떠요. 근데 앞의 두 줄만 무료고 나머지는 흐리게 잠겨 있어요.<br><br>여기서 궁금해서 결제하게 되는 거죠.'}
 };
 let expTimer=null;
 function explain(k){
@@ -769,11 +841,66 @@ function startFace(){
   setTimeout(()=>{
     wrap.classList.remove('scanning');wrap.classList.add('done');
     $('#scanstat').classList.remove('on');
-    $('#fRows').innerHTML=FROWS.map((r,i)=>`<div class="f-row" style="animation-delay:${(i*0.18).toFixed(2)}s"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join('');
+    $('#fRows').innerHTML=FROWS.map((r,i)=>`<div class="f-row ${i>1?'lock':''}" style="animation-delay:${(i*0.18).toFixed(2)}s"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join('');
     $('#fResult').classList.add('on');
     explain('faceResult');
     setTimeout(()=>{$('#fResult').scrollIntoView({behavior:'smooth',block:'start'})},250);
   },4300);
+}
+
+function unlockFace(btn){
+  btn.textContent='Reading the rest of your face\u2026';
+  btn.disabled=true;
+  setTimeout(()=>{
+    document.querySelectorAll('#fRows .f-row.lock').forEach((r,i)=>{
+      setTimeout(()=>r.classList.remove('lock'), i*160);
+    });
+    $('#fLocknote').style.display='none';
+    $('#fUnlockBtn').style.display='none';
+    $('#fNote').style.display='block';
+    $('#fBoost').classList.add('on');
+    $('#fCta').style.display='block';
+    explain('faceFull');
+    toast('Full reading unlocked');
+  },1100);
+}
+
+/* ================= match flow ================= */
+const MATCHES=new Set();
+function openMatch(n){
+  const f=friends.find(x=>x.name===n); if(!f)return;
+  if(MATCHES.has(n)){ showMatch(f); return; }
+  const col=f.rel==='Lucky Star'?'#F2CE8B':'#E8ECF4';
+  openSheetHtml(`
+    <div class="mload">
+      <div class="orbs"><i class="a"></i><i class="b" style="background:${col};box-shadow:0 0 22px ${col}55"></i></div>
+      <p class="cap">Reading both charts&hellip;</p>
+    </div>
+  `);
+  setTimeout(()=>{ MATCHES.add(n); showMatch(f); },1400);
+}
+function showMatch(f){
+  const col=f.rel==='Lucky Star'?'#F2CE8B':'#E8ECF4';
+  const score=Math.min(99,f.chem+3);
+  explain('match');
+  openSheetHtml(`
+    <div class="m-head">
+      <div class="m-orbs"><i class="a"></i><i class="b" style="background:${col};box-shadow:0 0 20px ${col}55"></i></div>
+      <p class="m-pair">Jordan &times; ${f.name}</p>
+      <p class="m-score" id="mScore">0</p>
+      <p class="m-cap">Written in both charts</p>
+    </div>
+    <div class="m-rows">
+      <div class="m-row" style="animation-delay:.15s"><b>Romance</b><p>The pull is quiet but it holds. You feel safe first, flutter second.</p></div>
+      <div class="m-row" style="animation-delay:.3s"><b>Chemistry</b><p>Same jokes, same pace. Even the silence feels fine, and that is rare.</p></div>
+      <div class="m-row" style="animation-delay:.45s"><b>Friction</b><p>You both go quiet instead of saying it. Name the thing a little sooner.</p></div>
+      <div class="m-row" style="animation-delay:.6s;border-bottom:none"><b>One tip</b><p>Big talks land better in daylight. Save the deep stuff for a walk.</p></div>
+    </div>
+    <div style="margin-top:22px"><button class="btng" onclick="openShare('match','${f.name}',${score})">Share this match</button></div>
+  `);
+  const el=document.getElementById('mScore');
+  const t0m=performance.now();
+  (function cu(t){const p=Math.min(1,Math.max(0,(t-t0m)/1000)),e=1-Math.pow(1-p,3);el.textContent=Math.round(score*e);if(p<1)requestAnimationFrame(cu)})(t0m);
 }
 
 /* ================= boot ================= */
