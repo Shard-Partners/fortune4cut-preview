@@ -1,0 +1,1222 @@
+<title>Fortune4Cut App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#FFFFFF;
+  --fill:#F3F4F6;
+  --fill-2:#F8F9FA;
+  --tint:#FFEEF1;
+  --ink:#1C1F24;
+  --ink-2:#6B7280;
+  --ink-3:#A6ADB4;
+  --accent:#FD355A;
+  --line:#ECEEF1;
+  --night:#101317;
+  --stage:#EEF0F3;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,"Segoe UI",Roboto,"Apple SD Gothic Neo",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--stage);
+  font-family:var(--font);
+  color:var(--ink);
+  overflow-wrap:break-word;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;border:none;background:none;padding:0;cursor:pointer;color:inherit;text-align:inherit}
+input,select{font-family:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* ============ stage ============ */
+.stage{
+  min-height:100vh;min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;padding:24px 0;
+}
+.stage-cap{
+  font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  color:#A0A7AE;margin:0;user-select:none;
+}
+.stage-cap button{font:inherit;color:inherit;letter-spacing:inherit;text-decoration:underline;text-underline-offset:3px}
+.app{
+  position:relative;width:390px;height:min(824px,calc(100dvh - 88px));
+  background:var(--bg);
+  border-radius:36px;overflow:hidden;
+  border:1px solid #E2E5E9;
+  box-shadow:0 44px 110px rgba(23,26,31,.22);
+}
+@media (max-width:480px){
+  .stage{padding:0;gap:0}
+  .stage-cap{display:none}
+  .app{width:100%;height:100dvh;border-radius:0;border:none;box-shadow:none}
+}
+
+/* ============ screens ============ */
+.screen{
+  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+  padding:30px 24px 120px;
+  display:none;flex-direction:column;scrollbar-width:none;background:var(--bg);
+}
+.screen::-webkit-scrollbar{display:none}
+.screen.on{display:flex;animation:scrIn .32s cubic-bezier(.3,.8,.3,1) both}
+.screen.center{justify-content:center}
+.center-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+@keyframes scrIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.screen.solo{padding-bottom:44px}
+
+/* ============ type & atoms ============ */
+.eyebrow{
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 10px;
+}
+.eyebrow b{color:var(--accent);font-weight:700}
+.h1{
+  font-weight:800;font-size:28px;line-height:1.22;letter-spacing:-.022em;
+  margin:0;text-wrap:balance;
+}
+.sub{font-size:14.5px;font-weight:400;line-height:1.6;color:var(--ink-2);margin:12px 0 0}
+.hr{height:1px;background:var(--line);border:none;margin:24px 0}
+
+.seal{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--accent);color:#fff;font-weight:700;
+  border-radius:9px;user-select:none;flex:none;
+}
+.seal.s{width:26px;height:26px;font-size:13px;border-radius:7px}
+.seal.m{width:40px;height:40px;font-size:19px;border-radius:11px}
+.seal.xl{width:96px;height:96px;font-size:46px;border-radius:24px}
+
+.btn{
+  display:flex;align-items:center;justify-content:center;width:100%;height:54px;
+  background:var(--accent);color:#fff;
+  border-radius:999px;font-size:15.5px;font-weight:700;letter-spacing:-.01em;
+  transition:transform .13s ease,opacity .13s ease;
+  box-shadow:0 8px 22px rgba(253,53,90,.26);
+}
+.btn:active{transform:scale(.975)}
+.btn.ghost{background:var(--fill);color:var(--ink);box-shadow:none}
+.btn.dark{background:var(--ink);box-shadow:none}
+.btn + .btn{margin-top:10px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.linkline{
+  display:block;width:100%;text-align:center;margin-top:18px;
+  font-size:13.5px;font-weight:500;color:var(--ink-3);
+}
+
+/* sub-screen header */
+.subhead{display:flex;align-items:center;gap:8px;margin:0 0 20px}
+.subhead .back{
+  width:38px;height:38px;margin-left:-8px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;color:var(--ink);transition:background .15s;
+}
+.subhead .back:active{background:var(--fill)}
+.subhead .t{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase}
+
+/* ============ tabbar ============ */
+.tabbar{
+  position:absolute;left:0;right:0;bottom:0;height:76px;z-index:30;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  display:none;grid-template-columns:repeat(4,1fr);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tabbar.on{display:grid}
+.tabbar button{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:-.005em;
+  transition:color .15s;
+}
+.tabbar button svg{width:23px;height:23px;stroke:currentColor;transition:stroke .15s}
+.tabbar button.on{color:var(--ink);font-weight:700}
+.tabbar button.on svg{stroke:var(--accent)}
+
+/* ============ invite ============ */
+.brand{display:flex;align-items:baseline;gap:8px;margin-bottom:40px}
+.brand .k{font-weight:800;font-size:19px;letter-spacing:-.02em}
+.brand .e{font-size:10px;font-weight:600;color:var(--ink-3);letter-spacing:.06em}
+.field{margin-top:18px}
+.field label{
+  display:block;font-size:11px;font-weight:700;letter-spacing:.08em;
+  color:var(--ink-3);margin-bottom:8px;text-transform:uppercase;
+}
+.field input[type=text],.field input[type=tel],.field select{
+  width:100%;height:52px;border:none;border-radius:15px;
+  background:var(--fill);padding:0 16px;font-size:15px;font-weight:500;color:var(--ink);
+  appearance:none;
+}
+.field input::placeholder{color:var(--ink-3);font-weight:400}
+.birthrow{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.birthrow input{text-align:center;font-variant-numeric:tabular-nums}
+.segment{
+  display:grid;grid-template-columns:1fr 1fr;background:var(--fill);
+  border-radius:14px;padding:3px;
+}
+.segment button{
+  height:42px;border-radius:11px;font-size:14px;color:var(--ink-2);font-weight:500;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.segment button.on{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 2px 8px rgba(23,26,31,.10)}
+.ferr{display:none;font-size:12.5px;font-weight:500;color:var(--accent);margin-top:10px}
+.ferr.on{display:block}
+.privacy{font-size:12px;color:var(--ink-3);text-align:center;margin-top:16px;font-weight:400;line-height:1.55}
+
+/* ============ reveal ============ */
+.reveal-wrap{display:flex;flex-direction:column;align-items:center;text-align:center}
+.stampin{opacity:0;transform:scale(1.5)}
+.stampin.play{animation:stamp .5s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes stamp{
+  0%{opacity:0;transform:scale(1.5)}
+  62%{opacity:1;transform:scale(.95)}
+  100%{opacity:1;transform:scale(1)}
+}
+.fadeup{opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.3,.8,.3,1)}
+.fadeup.play{opacity:1;transform:none}
+.rel-name{font-weight:800;font-size:38px;letter-spacing:-.03em;margin:26px 0 0;line-height:1.05}
+.rel-desc{font-size:14.5px;font-weight:400;line-height:1.65;color:var(--ink-2);margin:14px 0 0;max-width:280px}
+.chem{margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.chem .n{font-weight:800;font-size:60px;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.chem .l{font-size:10px;font-weight:700;letter-spacing:.24em;color:var(--ink-3);text-transform:uppercase}
+.reveal-cta{width:100%;margin-top:40px}
+
+/* ============ home ============ */
+.streakband{
+  display:flex;align-items:center;gap:12px;
+  background:var(--tint);border-radius:16px;
+  padding:14px 16px;margin:22px 0 0;
+}
+.streakband .tx{flex:1;font-size:13px;font-weight:500;line-height:1.5;color:var(--ink)}
+.streakband .tx b{font-weight:700}
+.streakband .go{font-size:13px;color:var(--accent);font-weight:700;flex:none}
+.strip{
+  margin:26px auto 0;width:260px;background:#fff;
+  border:1px solid var(--line);border-radius:20px;
+  padding:12px 12px 0;
+  box-shadow:0 16px 40px rgba(23,26,31,.10);
+}
+.strip .cell{
+  border-radius:12px;background:var(--fill-2);
+  padding:13px 15px;margin-bottom:10px;
+}
+.strip .cell .cl{
+  font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--ink-3);
+  margin-bottom:5px;text-transform:uppercase;
+}
+.strip .cell.hero{background:var(--tint)}
+.strip .cell.hero .cl{color:var(--accent)}
+.strip .cell .cv{font-size:15.5px;font-weight:700;letter-spacing:-.015em;line-height:1.3}
+.strip .foot{
+  display:flex;justify-content:space-between;align-items:center;height:38px;
+  font-size:8.5px;font-weight:700;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;
+  padding:0 4px;
+}
+.home-cta{margin-top:28px}
+
+/* ============ fate map, night panel ============ */
+.skypanel{
+  position:relative;margin:20px -2px 0;
+  background:radial-gradient(130% 105% at 50% 0%, #161A21 0%, #0B0E13 55%, #07090D 100%);
+  border-radius:28px;overflow:hidden;
+  box-shadow:0 28px 64px rgba(10,12,16,.42);
+}
+.skypanel svg{width:100%;display:block}
+.skypanel .corner{
+  position:absolute;font-size:8px;font-weight:700;letter-spacing:.24em;
+  color:rgba(255,255,255,.3);text-transform:uppercase;pointer-events:none;
+}
+.skypanel .c-tl{top:16px;left:19px}
+.skypanel .c-br{bottom:14px;right:19px}
+.skypanel .c-tr,.skypanel .c-bl{display:none}
+.skypanel text{font-family:var(--font)}
+.skypanel .nm{font-size:9.5px;fill:rgba(255,255,255,.72);font-weight:600;letter-spacing:.03em}
+.skypanel .nm.me{font-size:10px;fill:#fff;font-weight:700}
+.skypanel .orbit{fill:none;stroke:rgba(255,255,255,.07);stroke-width:1}
+.skypanel .orbit.o1{animation:orbitbreathe 7s ease-in-out infinite}
+@keyframes orbitbreathe{0%,100%{stroke:rgba(255,255,255,.07)}50%{stroke:rgba(255,255,255,.14)}}
+.star{transition:opacity .3s}
+.starborn{animation:sborn .7s cubic-bezier(.2,1.3,.3,1) both}
+@keyframes sborn{0%{opacity:0}55%{opacity:1}100%{opacity:1}}
+.tw1{animation:tw 3.4s ease-in-out infinite}
+.tw2{animation:tw 4.1s ease-in-out .9s infinite}
+.tw3{animation:tw 3.8s ease-in-out 1.7s infinite}
+@keyframes tw{0%,100%{opacity:1}50%{opacity:.5}}
+.shoot{animation:shoot 8.5s ease-in 2.2s infinite}
+@keyframes shoot{
+  0%{transform:translate(0,0);opacity:0}
+  86%{transform:translate(0,0);opacity:0}
+  88%{opacity:.9}
+  94%{transform:translate(210px,84px);opacity:0}
+  100%{transform:translate(210px,84px);opacity:0}
+}
+.progress{margin-top:20px}
+.progress .pl{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:9px}
+.progress .pl b{color:var(--ink);font-weight:800}
+.progress .track{height:6px;background:var(--fill);border-radius:99px;overflow:hidden}
+.progress .fill{height:100%;background:var(--accent);border-radius:99px;transition:width .7s cubic-bezier(.3,.8,.3,1)}
+.progress .cap{font-size:12.5px;color:var(--ink-3);margin-top:10px;font-weight:400}
+.legend-tg{margin-top:22px;font-size:13px;font-weight:600;color:var(--ink-3)}
+.legend{display:none;margin-top:14px;border-top:1px solid var(--line)}
+.legend.on{display:block}
+.legend .lg{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line)}
+.legend .lg .tx b{display:block;font-size:13.5px;font-weight:700;margin-bottom:2px}
+.legend .lg .tx span{font-size:12.5px;color:var(--ink-2);font-weight:400;line-height:1.55}
+.gw-cta{margin-top:22px}
+
+/* ============ readings hub ============ */
+.readrow{
+  display:flex;align-items:center;gap:14px;width:100%;
+  padding:18px 0;border-bottom:1px solid var(--line);
+}
+.readrow .tx{flex:1;min-width:0}
+.readrow .tx b{display:block;font-size:16.5px;font-weight:700;letter-spacing:-.015em}
+.readrow .tx span{display:block;font-size:12.5px;color:var(--ink-3);margin-top:3px;font-weight:400}
+.readrow .pr{font-size:13.5px;font-weight:700;color:var(--ink);flex:none;font-variant-numeric:tabular-nums}
+.readrow .pr.done{color:var(--accent)}
+.readrow:active{opacity:.55}
+.bundlenote{font-size:12px;color:var(--ink-3);margin-top:14px;font-weight:400}
+
+/* ============ result commons ============ */
+.gauges{margin-top:4px}
+.gauge{padding:15px 0;border-bottom:1px solid var(--line)}
+.gauge .gl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.gauge .gl .nm{font-size:14.5px;font-weight:600}
+.gauge .gl .vl{font-size:15px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.gauge .track{height:6px;background:var(--fill);border-radius:99px;overflow:hidden}
+.gauge .fill{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .9s cubic-bezier(.3,.8,.3,1)}
+.prose{font-size:14.5px;font-weight:400;line-height:1.75;color:var(--ink-2);margin:22px 0 0}
+.prose b{font-weight:700;color:var(--ink)}
+.tiprow{
+  display:flex;gap:12px;align-items:flex-start;margin-top:22px;
+  background:var(--fill-2);border-radius:16px;padding:16px;
+}
+.tiprow .tx{font-size:13px;font-weight:400;line-height:1.6;color:var(--ink-2)}
+.tiprow .tx b{display:block;color:var(--ink);font-weight:700;margin-bottom:3px}
+.resfoot{margin-top:28px}
+
+/* ============ face reading ============ */
+.facebox{
+  margin:26px auto 0;width:200px;height:240px;position:relative;
+  background:var(--fill);border-radius:22px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.facebox svg{width:132px}
+.facebox svg path{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+.scanline{
+  position:absolute;left:16px;right:16px;top:0;height:2px;background:var(--accent);
+  opacity:0;box-shadow:0 0 14px rgba(253,53,90,.45);border-radius:99px;
+}
+.scanline.play{opacity:.9;animation:scan 1.7s ease-in-out infinite}
+@keyframes scan{0%{top:12%}50%{top:86%}100%{top:12%}}
+.face-cap{text-align:center;font-size:12.5px;color:var(--ink-3);margin-top:14px;font-weight:400}
+.animal{display:flex;flex-direction:column;align-items:center;margin-top:26px;gap:12px}
+.animal .bg{font-weight:800;font-size:30px;letter-spacing:-.025em}
+.animal .fr{font-size:10px;font-weight:700;letter-spacing:.22em;color:var(--accent);text-transform:uppercase}
+.parts{margin-top:22px;border-top:1px solid var(--line);position:relative}
+.partrow{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.partrow .k{font-size:14px;font-weight:600;flex:none}
+.partrow .v{font-size:13.5px;color:var(--ink-2);font-weight:400;text-align:right}
+.parts.locked .partrow .v{filter:blur(5px);user-select:none}
+.locknote{display:none;font-size:12.5px;color:var(--ink-3);text-align:center;margin-top:14px}
+.parts.locked + .locknote{display:block}
+
+/* ============ compatibility ============ */
+.waitcard{
+  margin-top:28px;background:var(--fill-2);border-radius:20px;
+  padding:36px 24px;text-align:center;
+}
+.waitcard .t{font-weight:800;font-size:19px;letter-spacing:-.02em}
+.waitcard .d{font-size:13.5px;color:var(--ink-2);margin-top:8px;font-weight:400;line-height:1.6}
+.demolink{display:block;width:100%;text-align:center;margin-top:18px;font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase}
+.scorewrap{display:flex;flex-direction:column;align-items:center;padding-top:14px}
+.score-big{font-weight:800;font-size:100px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.score-lb{font-size:10px;font-weight:700;letter-spacing:.26em;color:var(--ink-3);margin-top:12px;text-transform:uppercase}
+.score-pair{font-size:14.5px;font-weight:600;color:var(--ink-2);margin-top:12px}
+.gh-secs{margin-top:28px;border-top:1px solid var(--line)}
+.gh-sec{padding:16px 0;border-bottom:1px solid var(--line)}
+.gh-sec b{display:block;font-size:14px;font-weight:700;margin-bottom:5px}
+.gh-sec p{margin:0;font-size:13.5px;color:var(--ink-2);font-weight:400;line-height:1.6}
+
+/* ============ archive ============ */
+.filters{display:flex;gap:8px;overflow-x:auto;margin:20px 0 4px;scrollbar-width:none;padding-bottom:4px}
+.filters::-webkit-scrollbar{display:none}
+.filters button{
+  flex:none;font-size:13px;font-weight:600;color:var(--ink-2);
+  background:var(--fill);border-radius:999px;padding:8px 14px;transition:all .15s;
+}
+.filters button.on{color:#fff;background:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.gcard{
+  aspect-ratio:3/4;background:#fff;border:1px solid var(--line);border-radius:18px;
+  padding:12px;display:flex;flex-direction:column;transition:transform .13s;
+  box-shadow:0 6px 18px rgba(23,26,31,.05);
+}
+.gcard:active{transform:scale(.96)}
+.gcard .ty{font-size:7.5px;font-weight:700;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase}
+.gcard .md{flex:1;display:flex;align-items:center;justify-content:center}
+.gcard .md .h{font-weight:800;font-size:23px;letter-spacing:-.02em}
+.gcard .md .h.rd{color:var(--accent)}
+.gcard .dt{font-size:8px;font-weight:600;color:var(--ink-3);letter-spacing:.04em}
+.empty{margin-top:60px;text-align:center}
+.empty .t{font-weight:800;font-size:19px;letter-spacing:-.02em}
+.empty .d{font-size:13.5px;color:var(--ink-3);margin-top:8px;font-weight:400}
+.resetline{display:block;margin:44px auto 0;font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--ink-3);text-align:center;text-transform:uppercase}
+
+/* ============ card detail ============ */
+.ratio-tg{display:grid;grid-template-columns:1fr 1fr;background:var(--fill);border-radius:14px;padding:3px;margin-bottom:22px}
+.ratio-tg button{height:40px;border-radius:11px;font-size:13px;font-weight:500;color:var(--ink-2);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ratio-tg button.on{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 2px 8px rgba(23,26,31,.10)}
+.cardview{
+  margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:22px;
+  box-shadow:0 20px 48px rgba(23,26,31,.13);
+  display:flex;flex-direction:column;padding:18px;
+  transition:all .35s cubic-bezier(.3,.8,.3,1);
+}
+.cardview.land{width:100%;aspect-ratio:1.91/1}
+.cardview.story{width:220px;aspect-ratio:9/16}
+.cardview .cv-top{font-size:8.5px;font-weight:700;letter-spacing:.18em;color:var(--ink-3);display:flex;justify-content:space-between;text-transform:uppercase}
+.cardview .cv-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.cardview .cv-h{font-weight:800;font-size:30px;letter-spacing:-.025em;line-height:1.1}
+.cardview .cv-h.rd{color:var(--accent)}
+.cardview.story .cv-h{font-size:40px}
+.cardview .cv-s{font-size:9.5px;font-weight:700;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase}
+.cardview .cv-bot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:11px;font-size:8px;font-weight:700;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase;white-space:nowrap}
+.cardview.story .cv-bot{justify-content:center}
+.cardview.story .cv-bot span:first-child{display:none}
+.counts{display:flex;justify-content:center;gap:22px;margin-top:18px;font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--ink-3)}
+.platgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+.plat{
+  background:var(--fill);border-radius:16px;padding:15px 16px;
+  display:flex;flex-direction:column;gap:3px;transition:transform .13s;
+}
+.plat:active{transform:scale(.97)}
+.plat b{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+.plat span{font-size:9px;font-weight:600;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase}
+
+/* ============ sheet / modal / toast ============ */
+.shade{
+  position:absolute;inset:0;z-index:50;background:rgba(16,19,23,.42);
+  opacity:0;pointer-events:none;transition:opacity .28s;
+}
+.shade.on{opacity:1;pointer-events:auto}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:60;
+  background:#fff;border-radius:28px 28px 0 0;
+  padding:14px 24px calc(30px + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .38s cubic-bezier(.3,.9,.3,1);
+  max-height:82%;overflow-y:auto;
+}
+.sheet.on{transform:none}
+.sheet .grip{width:36px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 20px}
+.sheet .sh-t{font-weight:800;font-size:20px;letter-spacing:-.02em;margin:0}
+.sheet .sh-d{font-size:13.5px;color:var(--ink-2);font-weight:400;line-height:1.6;margin:8px 0 0}
+.pricebig{font-size:36px;font-weight:800;color:var(--ink);margin:22px 0;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.pricebig small{font-size:10px;font-weight:700;color:var(--ink-3);margin-left:8px;letter-spacing:.14em}
+.sheetnote{font-size:12px;color:var(--ink-3);margin-top:14px;text-align:center;font-weight:400}
+.modal{
+  position:absolute;inset:0;z-index:70;display:none;
+  align-items:center;justify-content:center;padding:34px;
+  background:rgba(16,19,23,.42);
+}
+.modal.on{display:flex}
+.modal .box{
+  background:#fff;border-radius:26px;padding:36px 28px 26px;width:100%;
+  text-align:center;animation:pop .4s cubic-bezier(.2,1.2,.3,1) both;
+}
+@keyframes pop{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+.modal .box .t{font-weight:800;font-size:23px;letter-spacing:-.02em;margin-top:18px}
+.modal .box .d{font-size:13.5px;color:var(--ink-2);margin-top:10px;line-height:1.6;font-weight:400}
+.toast{
+  position:absolute;left:24px;right:24px;bottom:96px;z-index:90;
+  background:var(--ink);color:#fff;border-radius:999px;
+  padding:14px 20px;font-size:13.5px;font-weight:600;text-align:center;
+  opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;
+}
+.toast.on{opacity:1;transform:none}
+
+.reveal-wrap .seal.xl,.modal .box .seal.xl{box-shadow:0 16px 44px rgba(253,53,90,.38)}
+.chem .n,.score-big{text-shadow:0 14px 44px rgba(253,53,90,.28)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+<div class="stage">
+<div class="app" id="app">
+
+  <!-- ============ S: invite ============ -->
+  <section class="screen solo on" data-s="invite">
+    <div class="brand"><span class="k">Fortune4Cut</span><span class="e">운명네컷</span></div>
+    <span class="seal m">緣</span>
+    <h1 class="h1" style="margin-top:18px">Emma invited you<br>to her Fate Map</h1>
+    <p class="sub">Just your birthday. We'll read what kind of tie you two share, in about 60 seconds.</p>
+    <div class="hr"></div>
+    <div class="field">
+      <label>Nickname</label>
+      <input type="text" id="inName" value="Jordan" placeholder="A nickname works better than your real name" maxlength="14" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Birthday</label>
+      <div class="birthrow">
+        <input type="tel" id="inY" value="1998" placeholder="1998" maxlength="4">
+        <input type="tel" id="inM" value="03" placeholder="03" maxlength="2">
+        <input type="tel" id="inD" value="21" placeholder="21" maxlength="2">
+      </div>
+    </div>
+    <div class="field">
+      <label>Birth time</label>
+      <select id="inTime">
+        <option value="">I don't know, skip this</option>
+        <option>11 PM to 1 AM</option><option>1 to 3 AM</option>
+        <option>3 to 5 AM</option><option>5 to 7 AM</option>
+        <option>7 to 9 AM</option><option>9 to 11 AM</option>
+        <option>11 AM to 1 PM</option><option>1 to 3 PM</option>
+        <option>3 to 5 PM</option><option>5 to 7 PM</option>
+        <option>7 to 9 PM</option><option>9 to 11 PM</option>
+      </select>
+    </div>
+    <p class="ferr" id="inErr">Check your nickname and birthday.</p>
+    <button class="btn" style="margin-top:28px" onclick="submitInvite()">See it now, no sign up</button>
+    <p class="privacy">Your name and birthday are only used for this reading.</p>
+  </section>
+
+  <!-- ============ S: reveal ============ -->
+  <section class="screen solo center" data-s="reveal">
+    <div class="reveal-wrap">
+      <p class="eyebrow fadeup" id="rv0">You × Emma</p>
+      <span class="seal xl stampin" id="rvSeal">貴</span>
+      <h2 class="rel-name fadeup" id="rvName">Lucky Star</h2>
+      <p class="rel-desc fadeup" id="rvDesc">The one who shows up when it matters most. A tie that genuinely lifts you.</p>
+      <div class="chem fadeup" id="rvChem">
+        <span class="n" id="rvScore">0</span>
+        <span class="l">Chemistry Score</span>
+      </div>
+      <div class="reveal-cta fadeup" id="rvCta">
+        <button class="btn" onclick="enterApp()">Make my own Fate Map</button>
+        <button class="btn ghost" onclick="openShare('gwiin')">Share this result</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S: home ============ -->
+  <section class="screen" data-s="home">
+    <p class="eyebrow" id="homeDate">Thu, Aug 27 · <b>7-day streak</b></p>
+    <h1 class="h1">Today, for you</h1>
+    <div class="center-wrap">
+      <div class="streakband" id="streakBand" style="display:none">
+        <span class="seal s">券</span>
+        <span class="tx"><b>7-day streak.</b> A free Face Reading pass just landed.</span>
+        <button class="go" onclick="goRead('gwansang')">Use it</button>
+      </div>
+      <div class="strip">
+        <div class="cell hero"><div class="cl">Overall</div><div class="cv">Clear, then a light breeze</div></div>
+        <div class="cell"><div class="cl">Love</div><div class="cv">A good day to text first</div></div>
+        <div class="cell"><div class="cl">Money</div><div class="cv">Small spends add up</div></div>
+        <div class="cell"><div class="cl">One line</div><div class="cv">You'll get there, no rush</div></div>
+        <div class="foot"><span>Fortune4Cut</span><span id="stripDate">08.27.2026</span></div>
+      </div>
+      <div class="home-cta">
+        <button class="btn ghost" onclick="goRead('saju')">See the full reading</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S: fate map ============ -->
+  <section class="screen" data-s="gwiin">
+    <p class="eyebrow">Fate Map · <b id="gwCount">1 joined</b></p>
+    <h1 class="h1">Every friend becomes<br>a star on your map</h1>
+    <div class="skypanel">
+      <svg id="gwMap" viewBox="0 0 338 330"></svg>
+      <span class="corner c-tl">Fate Map</span>
+      <span class="corner c-tr">Tonight's sky</span>
+      <span class="corner c-bl" id="skyCount">1 star</span>
+      <span class="corner c-br" id="skyDate">08.27.2026</span>
+    </div>
+    <div class="progress">
+      <div class="pl"><span><b id="gwProgNum">1</b> / 10 friends</span><span id="gwProgCap">9 to go</span></div>
+      <div class="track"><div class="fill" id="gwFill" style="width:10%"></div></div>
+      <p class="cap">Hit 10 and a free Life4Cuts booth session is yours.</p>
+    </div>
+    <div class="gw-cta"><button class="btn" onclick="inviteFriend()">Invite a friend</button></div>
+    <button class="legend-tg" onclick="toggleLegend(this)">What do the types mean?</button>
+    <div class="legend" id="legend">
+      <div class="lg"><span class="seal s">貴</span><span class="tx"><b>Lucky Star</b><span>Shows up when it matters most and lifts you higher</span></span></div>
+      <div class="lg"><span class="seal s">助</span><span class="tx"><b>Right Hand</b><span>Things just work when you two team up</span></span></div>
+      <div class="lg"><span class="seal s">師</span><span class="tx"><b>Mentor</b><span>Tough on you, but you grow every time</span></span></div>
+      <div class="lg"><span class="seal s">緣</span><span class="tx"><b>Red Thread</b><span>A thread here could turn romantic</span></span></div>
+      <div class="lg"><span class="seal s">剋</span><span class="tx"><b>Rival</b><span>You clash, and somehow sharpen each other</span></span></div>
+    </div>
+  </section>
+
+  <!-- ============ S: readings hub ============ -->
+  <section class="screen" data-s="read">
+    <p class="eyebrow">Readings</p>
+    <h1 class="h1">What do you want<br>to know first?</h1>
+    <div class="hr" style="margin-bottom:4px"></div>
+    <button class="readrow" onclick="goRead('saju')">
+      <span class="seal s">命</span>
+      <span class="tx"><b>Saju Reading</b><span>Character · wealth · love · career</span></span>
+      <span class="pr" id="prSaju">$0.99</span>
+    </button>
+    <button class="readrow" onclick="goRead('gwansang')">
+      <span class="seal s">相</span>
+      <span class="tx"><b>Face Reading</b><span>What your face says about you</span></span>
+      <span class="pr" id="prGwansang">$0.99</span>
+    </button>
+    <button class="readrow" onclick="goRead('gunghap')">
+      <span class="seal s">合</span>
+      <span class="tx"><b>Compatibility</b><span>Friend & couple chemistry</span></span>
+      <span class="pr" id="prGunghap">$0.99</span>
+    </button>
+    <button class="readrow" onclick="toast('Big Luck cycles are coming soon')">
+      <span class="seal s">運</span>
+      <span class="tx"><b>Big Luck</b><span>Your 10-year luck cycles</span></span>
+      <span class="pr">$0.99</span>
+    </button>
+    <button class="readrow" onclick="toast('Year Ahead is coming soon')">
+      <span class="seal s">歲</span>
+      <span class="tx"><b>Year Ahead</b><span>Your forecast, month by month</span></span>
+      <span class="pr">$0.99</span>
+    </button>
+    <button class="readrow" style="border-bottom:none" onclick="openPurchase('bundle')">
+      <span class="seal s">全</span>
+      <span class="tx"><b>Premium Bundle</b><span>Saju + Face + Compatibility</span></span>
+      <span class="pr" id="prBundle">$2.49</span>
+    </button>
+    <p class="bundlenote">The bundle saves you $0.48.</p>
+  </section>
+
+  <!-- ============ S: archive ============ -->
+  <section class="screen" data-s="archive">
+    <p class="eyebrow">Cards</p>
+    <h1 class="h1">Your cards<br>live here</h1>
+    <div class="filters" id="filters">
+      <button class="on" data-f="all">All</button>
+      <button data-f="gwiin">Fate Map</button>
+      <button data-f="saju">Saju</button>
+      <button data-f="gwansang">Face</button>
+      <button data-f="gunghap">Match</button>
+      <button data-f="daily">Daily</button>
+      <button data-f="coupon">Passes</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="gridEmpty" style="display:none">
+      <p class="t">No cards yet</p>
+      <p class="d">Get a reading and it saves here as a card.</p>
+    </div>
+    <button class="resetline" onclick="resetDemo()">Reset demo</button>
+  </section>
+
+  <!-- ============ S: saju result ============ -->
+  <section class="screen" data-s="saju">
+    <div class="subhead"><button class="back" onclick="go(lastTab)">←</button><span class="t">Saju · Full Reading</span></div>
+    <span class="seal m">命</span>
+    <h1 class="h1" style="margin-top:16px">Solid metal,<br>wealth that blooms late</h1>
+    <div class="hr" style="margin:22px 0 0"></div>
+    <div class="gauges">
+      <div class="gauge"><div class="gl"><span class="nm">Wealth</span><span class="vl" data-cnt="78">0</span></div><div class="track"><div class="fill" data-w="78"></div></div></div>
+      <div class="gauge"><div class="gl"><span class="nm">Love</span><span class="vl" data-cnt="64">0</span></div><div class="track"><div class="fill" data-w="64"></div></div></div>
+      <div class="gauge"><div class="gl"><span class="nm">Career</span><span class="vl" data-cnt="91">0</span></div><div class="track"><div class="fill" data-w="91"></div></div></div>
+    </div>
+    <p class="prose">You were born under a <b>Yang Metal day master (庚)</b> with a bright wealth star. You spot money before others do, and it comes in big waves, but slips out just as fast. Keep your wallet closed in October.</p>
+    <div class="tiprow">
+      <span class="seal s">開</span>
+      <span class="tx"><b>This week's luck boost</b>Walk east in the morning. Keep something blue close.</span>
+    </div>
+    <div class="resfoot">
+      <button class="btn" onclick="openShare('saju')">Share as a card</button>
+      <button class="btn ghost" onclick="toast('Extra questions are $0.49 in this demo')">Ask another question · $0.49</button>
+    </div>
+  </section>
+
+  <!-- ============ S: face reading ============ -->
+  <section class="screen" data-s="gwansang">
+    <div class="subhead"><button class="back" onclick="go(lastTab)">←</button><span class="t">Face Reading</span></div>
+    <div class="center-wrap">
+    <div id="gsStep1">
+      <span class="seal m">相</span>
+      <h1 class="h1" style="margin-top:16px">Your face carries<br>its own fortune</h1>
+      <button class="facebox" onclick="startScan()" aria-label="Upload a photo">
+        <svg viewBox="0 0 120 150" aria-hidden="true">
+          <path d="M60 20 C84 20 96 42 94 70 C92 100 79 122 60 124 C41 122 28 100 26 70 C24 42 36 20 60 20 Z"/>
+          <path d="M41 60 q6 -5 13 0"/><path d="M66 60 q6 -5 13 0"/>
+          <path d="M60 66 q-4 13 2 17"/>
+          <path d="M49 99 q11 8 22 0"/>
+        </svg>
+        <span class="scanline" id="scanline"></span>
+      </button>
+      <p class="face-cap" id="gsCap">Tap to add a photo · the demo uses a sample face</p>
+    </div>
+
+    <div id="gsStep2" style="display:none">
+      <div class="animal">
+        <span class="seal xl stampin play" style="font-size:40px">狐</span>
+        <span class="bg">You have a Fox Face</span>
+        <span class="fr">Free Result</span>
+      </div>
+      <p class="sub" style="text-align:center">Sharp eyes, quick wit.<br>You read people faster than they read you.</p>
+      <div class="parts locked" id="gsParts">
+        <div class="partrow"><span class="k">Forehead</span><span class="v">Broad and round, smooth early years</span></div>
+        <div class="partrow"><span class="k">Eyes</span><span class="v">Long and clear, fast and sure judgment</span></div>
+        <div class="partrow"><span class="k">Nose</span><span class="v">Straight bridge, wealth gathers later in life</span></div>
+        <div class="partrow"><span class="k">Lips</span><span class="v">Upturned corners, luck follows your words</span></div>
+      </div>
+      <p class="locknote">The detailed reading is locked.</p>
+      <div class="resfoot" id="gsUnlockBtns">
+        <button class="btn" id="gsUnlock" onclick="unlockGwansang()">Unlock · $0.99</button>
+      </div>
+      <div class="resfoot" id="gsDoneBtns" style="display:none">
+        <button class="btn" onclick="openShare('gwansang')">Share as a card</button>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ============ S: compatibility ============ -->
+  <section class="screen" data-s="gunghap">
+    <div class="subhead"><button class="back" onclick="go(lastTab)">←</button><span class="t">Compatibility</span></div>
+    <div class="center-wrap">
+    <div id="ghStep1">
+      <span class="seal m">合</span>
+      <h1 class="h1" style="margin-top:16px">Your chemistry,<br>as one number</h1>
+      <div class="field" style="margin-top:26px">
+        <label>What are you two?</label>
+        <div class="segment" id="ghSeg">
+          <button class="on" data-v="friends">Friends</button>
+          <button data-v="couple">Couple</button>
+        </div>
+      </div>
+      <button class="btn" style="margin-top:26px" onclick="sendGhInvite()">Send them the link</button>
+      <p class="privacy">You pay only after they join.<br>They see the result for free.</p>
+    </div>
+
+    <div id="ghStep2" style="display:none">
+      <div class="waitcard">
+        <p class="t">Waiting for Emma</p>
+        <p class="d">The moment she enters her birthday,<br>you'll both see the result.</p>
+      </div>
+      <button class="demolink" onclick="ghPartnerJoin()">Demo · simulate her joining</button>
+    </div>
+
+    <div id="ghStep3" style="display:none">
+      <div class="scorewrap">
+        <span class="score-big" id="ghScore">0</span>
+        <span class="score-lb">Chemistry Score</span>
+        <span class="score-pair" id="ghPair">You × Emma</span>
+      </div>
+      <div class="gh-secs">
+        <div class="gh-sec"><b>Romance</b><p>Your elements fill each other's gaps. The longer you know each other, the easier it gets.</p></div>
+        <div class="gh-sec"><b>Chemistry</b><p>Conversation flows, and the silences aren't awkward either.</p></div>
+        <div class="gh-sec"><b>Friction</b><p>You're both stubborn, so a bad day in the same room can spark.</p></div>
+        <div class="gh-sec" style="border-bottom:none"><b>Tip</b><p>Have the big talks at noon, not at night.</p></div>
+      </div>
+      <div class="resfoot">
+        <button class="btn" onclick="openShare('gunghap')">Share as a card</button>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ============ S: card detail ============ -->
+  <section class="screen" data-s="card">
+    <div class="subhead"><button class="back" onclick="go('archive')">←</button><span class="t" id="cdType">Card</span></div>
+    <div class="ratio-tg" id="ratioTg">
+      <button class="on" data-r="land">Landscape</button>
+      <button data-r="story">Story</button>
+    </div>
+    <div class="cardview land" id="cardview">
+      <div class="cv-top"><span>Fortune4Cut</span><span id="cvDate">08.27.2026</span></div>
+      <div class="cv-mid">
+        <span class="seal m" id="cvSeal">貴</span>
+        <span class="cv-h" id="cvHead">Lucky Star</span>
+        <span class="cv-s" id="cvSub">You × Emma</span>
+      </div>
+      <div class="cv-bot"><span>운명네컷</span><span>Get yours · fortune4cut.app</span></div>
+    </div>
+    <div class="counts"><span id="cvViews">128 views</span><span id="cvShares">3 shares</span></div>
+    <div class="platgrid">
+      <button class="plat" onclick="shareTo('X')"><b>X</b><span>Share URL</span></button>
+      <button class="plat" onclick="shareTo('Threads')"><b>Threads</b><span>Share URL</span></button>
+      <button class="plat" onclick="shareTo('Instagram')"><b>Instagram</b><span>Save to story</span></button>
+      <button class="plat" onclick="shareTo('Facebook')"><b>Facebook</b><span>Share URL</span></button>
+    </div>
+  </section>
+
+  <!-- tabbar -->
+  <nav class="tabbar" id="tabbar">
+    <button data-t="home" class="on" onclick="go('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.4 12 4l8 7.4"/><path d="M6.2 9.9V19a1 1 0 0 0 1 1h3.3v-5.6h3v5.6H17a1 1 0 0 0 1-1V9.9"/></svg>
+      Home
+    </button>
+    <button data-t="gwiin" onclick="go('gwiin')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c.55 3.1 1.85 5.35 4.8 6.8-2.95 1.45-4.25 3.7-4.8 6.8-.55-3.1-1.85-5.35-4.8-6.8 2.95-1.45 4.25-3.7 4.8-6.8z"/></svg>
+      Fate Map
+    </button>
+    <button data-t="read" onclick="go('read')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.2c-1.7-1.15-3.75-1.65-6.2-1.65v12.3c2.45 0 4.5.5 6.2 1.65 1.7-1.15 3.75-1.65 6.2-1.65V5.55c-2.45 0-4.5.5-6.2 1.65z"/><path d="M12 7.2v12.3"/></svg>
+      Readings
+    </button>
+    <button data-t="archive" onclick="go('archive')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.8 5.3h8.4a2 2 0 0 1 2 2v8.4" opacity=".5"/><rect x="4" y="8.7" width="12.4" height="12.4" rx="2.4"/></svg>
+      Cards
+    </button>
+  </nav>
+
+  <!-- sheet / modal / toast -->
+  <div class="shade" id="shade" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet"></div>
+  <div class="modal" id="modal"></div>
+  <div class="toast" id="toast"></div>
+
+</div>
+<p class="stage-cap"><button onclick="resetDemo()">Reset</button></p>
+</div>
+
+<script>
+/* ================= state ================= */
+const LS_KEY = 'f4c_proto_us_v2';
+const REL = {
+  'Lucky Star':{h:'貴',d:'The one who shows up when it matters most. A tie that genuinely lifts you.'},
+  'Right Hand':{h:'助',d:'Things just work when you two team up.'},
+  'Mentor':{h:'師',d:'Tough on you, but you grow every time.'},
+  'Red Thread':{h:'緣',d:'There is a thread here that could turn romantic.'},
+  'Rival':{h:'剋',d:'You clash, and somehow sharpen each other.'}
+};
+const POOL = [
+  {name:'Liam',rel:'Right Hand',score:82},{name:'Ava',rel:'Mentor',score:76},
+  {name:'Noah',rel:'Red Thread',score:88},{name:'Mia',rel:'Rival',score:41},
+  {name:'Ethan',rel:'Lucky Star',score:93},{name:'Zoe',rel:'Right Hand',score:79},
+  {name:'Lucas',rel:'Lucky Star',score:85},{name:'Chloe',rel:'Mentor',score:71},
+  {name:'Mason',rel:'Lucky Star',score:89}
+];
+let S = {
+  profile:null, streak:6, streakBumped:false, couponGwansang:false,
+  participants:[], purchases:{}, cards:[], celebrated:false
+};
+function save(){ try{localStorage.setItem(LS_KEY,JSON.stringify(S))}catch(e){} }
+function load(){ try{const r=localStorage.getItem(LS_KEY); if(r) S=Object.assign(S,JSON.parse(r))}catch(e){} }
+
+/* ================= helpers ================= */
+const $ = s=>document.querySelector(s);
+let toastTimer=null;
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'),2200);
+}
+function countUp(el,to,dur){
+  const t0=performance.now();
+  function step(t){
+    const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(to*e);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function todayStr(){
+  const d=new Date();
+  return `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}.${d.getFullYear()}`;
+}
+function todayUS(){
+  const d=new Date();
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${days[d.getDay()]}, ${mons[d.getMonth()]} ${d.getDate()}`;
+}
+
+/* ================= router ================= */
+const TABS=['home','gwiin','read','archive'];
+let lastTab='home';
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const scr=document.querySelector(`[data-s="${name}"]`);
+  scr.classList.add('on'); scr.scrollTop=0;
+  const isTab=TABS.includes(name);
+  if(isTab) lastTab=name;
+  $('#tabbar').classList.toggle('on', isTab);
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.t===name));
+  if(name==='home') renderHome();
+  if(name==='gwiin') renderMap();
+  if(name==='read') renderPrices();
+  if(name==='archive') renderGrid(curFilter);
+  if(name==='saju') animGauges();
+}
+
+/* ================= invite flow ================= */
+document.querySelectorAll('#ghSeg button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('#ghSeg button').forEach(x=>x.classList.remove('on'));b.classList.add('on')};
+});
+[['inY',4,'inM'],['inM',2,'inD']].forEach(([id,len,next])=>{
+  $('#'+id).addEventListener('input',e=>{ if(e.target.value.length>=len) $('#'+next).focus(); });
+});
+function submitInvite(){
+  const name=$('#inName').value.trim();
+  const y=+$('#inY').value, m=+$('#inM').value, d=+$('#inD').value;
+  const ok = name && y>=1900 && y<=2026 && m>=1 && m<=12 && d>=1 && d<=31;
+  $('#inErr').classList.toggle('on',!ok);
+  if(!ok) return;
+  S.profile={name, birth:`${y}.${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}`};
+  save();
+  go('reveal'); playReveal();
+}
+function playReveal(){
+  const score=91;
+  ['rv0','rvSeal','rvName','rvDesc','rvChem','rvCta'].forEach(id=>$('#'+id).classList.remove('play'));
+  $('#rv0').textContent=`${S.profile?S.profile.name:'You'} × Emma`;
+  setTimeout(()=>$('#rv0').classList.add('play'),150);
+  setTimeout(()=>$('#rvSeal').classList.add('play'),450);
+  setTimeout(()=>$('#rvName').classList.add('play'),900);
+  setTimeout(()=>$('#rvDesc').classList.add('play'),1050);
+  setTimeout(()=>{$('#rvChem').classList.add('play');countUp($('#rvScore'),score,900)},1250);
+  setTimeout(()=>$('#rvCta').classList.add('play'),1600);
+}
+function enterApp(){
+  if(!S.participants.length){
+    S.participants=[{name:'Emma',rel:'Lucky Star',score:91}];
+    addCard('gwiin','Fate Map','貴','Lucky Star',`${S.profile.name} × Emma`);
+  }
+  if(!S.streakBumped){
+    S.streak=7; S.streakBumped=true; S.couponGwansang=true;
+    addCard('coupon','Pass','券','Free Pass','Face Reading');
+  }
+  addDailyCard();
+  save();
+  go('home');
+}
+
+/* ================= home ================= */
+function renderHome(){
+  $('#homeDate').innerHTML=`${todayUS()} · <b>${S.streak}-day streak</b>`;
+  $('#stripDate').textContent=todayStr();
+  $('#streakBand').style.display = S.couponGwansang ? 'flex' : 'none';
+}
+function addDailyCard(){
+  const key='daily-'+todayStr();
+  if(!S.cards.some(c=>c.key===key)){
+    addCard('daily','Daily','日','Clear skies','Today, for you',key);
+  }
+}
+
+/* ================= fate map ================= */
+const STAR='M0,-7 C1.2,-2.2 2.2,-1.2 7,0 C2.2,1.2 1.2,2.2 0,7 C-1.2,2.2 -2.2,1.2 -7,0 C-2.2,-1.2 -1.2,-2.2 0,-7 Z';
+let bornIdx=-1;
+function renderMap(){
+  const n=S.participants.length;
+  $('#gwCount').textContent=n+' joined';
+  $('#gwProgNum').textContent=n;
+  $('#gwProgCap').textContent = n>=10 ? 'Done!' : (10-n)+' to go';
+  $('#gwFill').style.width=Math.min(100,n*10)+'%';
+  $('#skyCount').textContent=n+(n===1?' star':' stars');
+  $('#skyDate').textContent=todayStr();
+  const svg=$('#gwMap'); const cx=169,cy=176,W=338,H=356;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  let out=`<defs>
+    <filter id="fg1" x="-250%" y="-250%" width="600%" height="600%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="fg2" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <radialGradient id="vig" cx="50%" cy="47%" r="74%"><stop offset="55%" stop-color="rgba(8,10,14,0)"/><stop offset="100%" stop-color="rgba(8,10,14,.55)"/></radialGradient>
+  </defs>`;
+  /* tiny background stars for depth */
+  for(let i=0;i<30;i++){
+    const x=((i*149+57)%(W-24))+12, y=((i*211+43)%(H-30))+15;
+    const r=i%5===0?1.2:.7, o=(.06+((i*37)%12)*.014).toFixed(2);
+    out+=`<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(255,255,255,${o})" class="tw${i%3+1}"/>`;
+  }
+  /* orbit rings, a closer orbit means stronger chemistry */
+  [[70,.8,'o1'],[106,.82,''],[138,.84,'']].forEach(([rx,sq,cls])=>{
+    out+=`<ellipse class="orbit ${cls}" cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx*sq}"/>`;
+  });
+  out+=`<g class="shoot"><line x1="40" y1="54" x2="74" y2="67" stroke="rgba(255,255,255,.7)" stroke-width="1.1" stroke-linecap="round"/></g>`;
+  const RINGS=[{r:70,sq:.8,start:-70},{r:106,sq:.82,start:35},{r:138,sq:.84,start:-125}];
+  const byRing=[[],[],[]];
+  S.participants.forEach((f,i)=>{ byRing[f.score>=85?0:(f.score>=65?1:2)].push(i); });
+  const pos={};
+  byRing.forEach((idxs,ri)=>{
+    const R=RINGS[ri];
+    idxs.forEach((pi,k)=>{
+      const a=(R.start + k*(360/idxs.length))*(Math.PI/180);
+      pos[pi]={x:cx+Math.cos(a)*R.r, y:cy+Math.sin(a)*R.r*R.sq};
+    });
+  });
+  S.participants.forEach((f,i)=>{
+    const {x,y}=pos[i];
+    const sc=(.78+(f.score/100)*.42).toFixed(2);
+    const hi=f.rel==='Lucky Star';
+    out+=`<g class="star tw${i%3+1} ${i===bornIdx?'starborn':''}" onclick="openRelSheet(${i})" style="cursor:pointer">
+      <path d="${STAR}" transform="translate(${x},${y}) scale(${sc})" fill="${hi?'#FF6B85':'#FFFFFF'}" filter="url(#fg1)"/>
+      <circle cx="${x}" cy="${y}" r="18" fill="transparent"/>
+      <text class="nm" x="${x}" y="${y+24}" text-anchor="middle">${f.name}</text>
+    </g>`;
+  });
+  out+=`<path d="${STAR}" transform="translate(${cx},${cy}) scale(1.7)" fill="#FD355A" filter="url(#fg2)"/>
+        <text class="nm me" x="${cx}" y="${cy+31}" text-anchor="middle">You</text>
+        <rect width="${W}" height="${H}" fill="url(#vig)" pointer-events="none"/>`;
+  svg.innerHTML=out;
+  bornIdx=-1;
+}
+function toggleLegend(btn){
+  const lg=$('#legend'); lg.classList.toggle('on');
+  btn.textContent=lg.classList.contains('on')?'Hide':'What do the types mean?';
+}
+function inviteFriend(){ openShare('invite'); }
+function simulateJoin(){
+  if(S.participants.length>=10){ toast('Your map is full'); return; }
+  const next=POOL[S.participants.length-1];
+  if(!next) return;
+  S.participants.push(next); save();
+  bornIdx=S.participants.length-1;
+  renderMap();
+  toast(`${next.name} just joined your map`);
+  if(S.participants.length>=10 && !S.celebrated){
+    S.celebrated=true;
+    addCard('coupon','Pass','券','Booth Pass','Life4Cuts · 1 session');
+    save();
+    setTimeout(openCelebrate,700);
+  }
+}
+function openRelSheet(i){
+  const f=S.participants[i]; const r=REL[f.rel];
+  openSheet(`
+    <div style="display:flex;gap:16px;align-items:center">
+      <span class="seal m">${r.h}</span>
+      <div><p class="sh-t">${f.name} · ${f.rel}</p>
+      <p class="sh-d" style="margin-top:4px">Chemistry score <b style="color:var(--accent)">${f.score}</b></p></div>
+    </div>
+    <p class="sh-d" style="margin-top:16px">${r.d}</p>
+    <button class="btn ghost" style="margin-top:22px" onclick="closeSheet()">Close</button>
+  `);
+}
+function openCelebrate(){
+  $('#modal').innerHTML=`<div class="box">
+    <span class="seal xl stampin play" style="font-size:44px">券</span>
+    <p class="t">Your booth pass is here</p>
+    <p class="d">10 friends on your map.<br>Redeem at any Life4Cuts booth within 30 days.</p>
+    <button class="btn" style="margin-top:24px" onclick="closeCelebrate()">See it in Cards</button>
+  </div>`;
+  $('#modal').classList.add('on');
+}
+function closeCelebrate(){ $('#modal').classList.remove('on'); go('archive'); }
+
+/* ================= readings / purchase ================= */
+const PRICE={saju:'$0.99',gwansang:'$0.99',gunghap:'$0.99',bundle:'$2.49'};
+function renderPrices(){
+  $('#prSaju').textContent = S.purchases.saju ? 'View again' : PRICE.saju;
+  $('#prSaju').classList.toggle('done',!!S.purchases.saju);
+  $('#prGwansang').textContent = S.purchases.gwansang ? 'View again' : (S.couponGwansang?'Free pass':PRICE.gwansang);
+  $('#prGwansang').classList.toggle('done',!!S.purchases.gwansang||S.couponGwansang);
+  $('#prGunghap').textContent = S.purchases.gunghap ? 'View again' : PRICE.gunghap;
+  $('#prGunghap').classList.toggle('done',!!S.purchases.gunghap);
+  $('#prBundle').textContent = (S.purchases.saju&&S.purchases.gwansang&&S.purchases.gunghap)?'Owned':PRICE.bundle;
+}
+function goRead(item){
+  if(item==='saju'){
+    if(S.purchases.saju){ go('saju'); }
+    else openPurchase('saju');
+  }
+  if(item==='gwansang'){ go('gwansang'); resetGwansang(); }
+  if(item==='gunghap'){ go('gunghap'); resetGunghap(); }
+}
+function openPurchase(item){
+  const names={saju:'Your Full Saju Reading',gwansang:'Your Face Reading, In Full',gunghap:'Compatibility Result',bundle:'Premium Bundle'};
+  const extra = item==='gunghap' ? '<p class="sheetnote">You pay once. Your friend sees the result for free.</p>' : '';
+  openSheet(`
+    <p class="sh-t">${names[item]}</p>
+    <p class="sh-d">Saved as a card. Yours to revisit anytime.</p>
+    <p class="pricebig">${PRICE[item]}<small>PAY ONCE</small></p>
+    <button class="btn" onclick="buy('${item}')">Buy now</button>
+    <button class="linkline" onclick="closeSheet()">Maybe later</button>
+    ${extra}
+  `);
+}
+function buy(item){
+  const b=$('#sheet .btn'); b.textContent='Processing…'; b.disabled=true;
+  setTimeout(()=>{
+    if(item==='bundle'){ S.purchases.saju=S.purchases.gwansang=S.purchases.gunghap=true; }
+    else S.purchases[item]=true;
+    save(); closeSheet(); toast('Purchased');
+    if(item==='saju'){ addSajuCard(); setTimeout(()=>go('saju'),350); }
+    if(item==='bundle'){ addSajuCard(); setTimeout(()=>go('read'),300); }
+    if(item==='gwansang'){ finishGwansangUnlock(); }
+    if(item==='gunghap'){ showGhResult(); }
+  },900);
+}
+function addSajuCard(){
+  if(!S.cards.some(c=>c.key==='saju1')) addCard('saju','Saju','命','78 · 64 · 91','Full Reading','saju1');
+}
+function animGauges(){
+  document.querySelectorAll('[data-s="saju"] .fill').forEach(f=>{f.style.width='0'});
+  setTimeout(()=>{
+    document.querySelectorAll('[data-s="saju"] .fill').forEach(f=>{f.style.width=f.dataset.w+'%'});
+    document.querySelectorAll('[data-s="saju"] .vl').forEach(v=>countUp(v,+v.dataset.cnt,900));
+  },120);
+}
+
+/* ================= face reading ================= */
+let gsUnlocked=false;
+function resetGwansang(){
+  $('#gsStep1').style.display='block';
+  $('#gsStep2').style.display='none';
+  $('#scanline').classList.remove('play');
+  $('#gsCap').textContent='Tap to add a photo · the demo uses a sample face';
+  gsUnlocked = !!S.purchases.gwansang;
+  applyGsLock();
+}
+function startScan(){
+  $('#scanline').classList.add('play');
+  $('#gsCap').textContent='Reading your face…';
+  setTimeout(()=>{
+    $('#gsStep1').style.display='none';
+    $('#gsStep2').style.display='block';
+    if(!S.cards.some(c=>c.key==='gs1')) addCard('gwansang','Face','狐','Fox Face','Free result','gs1');
+    save();
+  },1800);
+}
+function applyGsLock(){
+  $('#gsParts').classList.toggle('locked',!gsUnlocked);
+  $('#gsUnlockBtns').style.display = gsUnlocked?'none':'block';
+  $('#gsDoneBtns').style.display = gsUnlocked?'block':'none';
+  if(S.couponGwansang && !gsUnlocked) $('#gsUnlock').textContent='Unlock with free pass';
+  else $('#gsUnlock').textContent='Unlock · $0.99';
+}
+function unlockGwansang(){
+  if(S.couponGwansang){
+    S.couponGwansang=false; S.purchases.gwansang=true; save();
+    toast('Free pass used');
+    finishGwansangUnlock();
+  } else {
+    openPurchase('gwansang');
+  }
+}
+function finishGwansangUnlock(){
+  gsUnlocked=true; applyGsLock(); renderHome();
+}
+
+/* ================= compatibility ================= */
+function resetGunghap(){
+  $('#ghStep1').style.display='block';
+  $('#ghStep2').style.display='none';
+  $('#ghStep3').style.display='none';
+}
+function sendGhInvite(){ openShare('ghinvite'); }
+function ghPartnerJoin(){
+  toast('Emma just finished joining');
+  setTimeout(()=>{
+    if(S.purchases.gunghap) showGhResult();
+    else openPurchase('gunghap');
+  },700);
+}
+function showGhResult(){
+  $('#ghStep1').style.display='none';
+  $('#ghStep2').style.display='none';
+  $('#ghStep3').style.display='block';
+  $('#ghPair').textContent=`${S.profile?S.profile.name:'You'} × Emma`;
+  countUp($('#ghScore'),87,1100);
+  if(!S.cards.some(c=>c.key==='gh1')) addCard('gunghap','Match','合','87','You × Emma','gh1');
+  save();
+}
+
+/* ================= archive / cards ================= */
+let curFilter='all';
+function addCard(type,typeName,hanja,head,sub,key){
+  S.cards.unshift({
+    id:'c'+Date.now()+Math.random().toString(36).slice(2,5),
+    key:key||null, type, typeName, hanja, head, sub,
+    date:todayStr(), views:40+Math.floor(Math.random()*160), shares:Math.floor(Math.random()*5)
+  });
+  save();
+}
+document.querySelectorAll('#filters button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#filters button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); curFilter=b.dataset.f; renderGrid(curFilter);
+  };
+});
+function renderGrid(f){
+  const list=S.cards.filter(c=>f==='all'||c.type===f);
+  const g=$('#grid');
+  g.innerHTML=list.map(c=>`
+    <button class="gcard" onclick="openCard('${c.id}')">
+      <span class="ty">${c.typeName}</span>
+      <span class="md"><span class="h ${['gunghap','coupon'].includes(c.type)?'rd':''}">${c.hanja}</span></span>
+      <span class="dt">${c.date}</span>
+    </button>`).join('');
+  $('#gridEmpty').style.display=list.length?'none':'block';
+}
+let curCard=null;
+function openCard(id){
+  curCard=S.cards.find(c=>c.id===id); if(!curCard) return;
+  $('#cdType').textContent=curCard.typeName+' Card';
+  $('#cvSeal').textContent=curCard.hanja;
+  $('#cvHead').textContent=curCard.head;
+  $('#cvHead').classList.toggle('rd',['gunghap','coupon'].includes(curCard.type));
+  $('#cvSub').textContent=curCard.sub;
+  $('#cvDate').textContent=curCard.date;
+  $('#cvViews').textContent=curCard.views+' views';
+  $('#cvShares').textContent=curCard.shares+' shares';
+  go('card');
+}
+document.querySelectorAll('#ratioTg button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#ratioTg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    $('#cardview').className='cardview '+b.dataset.r;
+  };
+});
+function shareTo(p){
+  if(curCard){ curCard.shares++; $('#cvShares').textContent=curCard.shares+' shares'; save(); }
+  if(p==='Instagram') toast('Image saved. Post it to your story');
+  else toast('Shared to '+p);
+}
+
+/* ================= share sheet ================= */
+function openShare(ctx){
+  const isInvite = ctx==='invite'||ctx==='ghinvite';
+  openSheet(`
+    <p class="sh-t">${isInvite?'Send an invite link':'Share your card'}</p>
+    <p class="sh-d">${isInvite?'Anyone with the link can join, no sign up needed.':'Your result, as a beautiful card.'}</p>
+    <div class="platgrid" style="margin-top:20px">
+      <button class="plat" onclick="shareDone('${ctx}','iMessage')"><b>iMessage</b><span>Send link</span></button>
+      <button class="plat" onclick="shareDone('${ctx}','Instagram')"><b>Instagram</b><span>Save to story</span></button>
+      <button class="plat" onclick="shareDone('${ctx}','X')"><b>X</b><span>Share URL</span></button>
+      <button class="plat" onclick="shareDone('${ctx}','Copy Link')"><b>Copy Link</b><span>Paste anywhere</span></button>
+    </div>
+    <button class="linkline" onclick="closeSheet()">Close</button>
+  `);
+}
+function shareDone(ctx,p){
+  closeSheet();
+  toast(p==='Copy Link'?'Link copied':(p==='Instagram'?'Image saved. Post it to your story':'Shared'));
+  if(ctx==='invite'){ setTimeout(simulateJoin,1300); }
+  if(ctx==='ghinvite'){
+    $('#ghStep1').style.display='none';
+    $('#ghStep2').style.display='block';
+  }
+}
+
+/* ================= sheet infra ================= */
+let sheetTok=0;
+function openSheet(html){
+  const t=++sheetTok;
+  $('#sheet').innerHTML='<div class="grip"></div>'+html;
+  $('#shade').classList.add('on');
+  requestAnimationFrame(()=>{ if(t===sheetTok) $('#sheet').classList.add('on'); });
+}
+function closeSheet(){
+  ++sheetTok;
+  $('#sheet').classList.remove('on');
+  $('#shade').classList.remove('on');
+}
+
+/* ================= reset & boot ================= */
+function resetDemo(){
+  try{localStorage.removeItem(LS_KEY)}catch(e){}
+  location.reload();
+}
+load();
+if(S.profile){
+  document.querySelector('[data-s="invite"]').classList.remove('on');
+  addDailyCard();
+  go('home');
+}
+</script>
